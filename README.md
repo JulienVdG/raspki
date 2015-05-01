@@ -10,3 +10,13 @@ or use `git submodule update --init`
 1. build toolchain: `make -f Makefile.toolchain oldconfig toolchain`
 
 2. build raspki: `make`
+
+# install
+
+Mount SdCard as `/media/usb0` then copy the files:
+```
+cp -R output/images/rpi-firmware/* /media/usb0
+cp output/images/zImage /media/usb0
+cp output/images/rootfs.cpio.gz /media/usb0
+```
+
