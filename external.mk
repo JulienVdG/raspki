@@ -1,4 +1,5 @@
 # Makefiles used by all subprojects
+include $(sort $(wildcard $(BR2_EXTERNAL)/package/*/*.mk))
 
 BR2_ROOTFS_POST_BUILD_SCRIPT += $(BR2_EXTERNAL)/ssh_devel.sh
 
