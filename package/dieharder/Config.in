@@ -1,0 +1,8 @@
+config BR2_PACKAGE_DIEHARDER
+	bool "dieharder"
+	help
+	  dieharder is a fairly involved random number/uniform deviate generator
+	  tester. It is thus suitable for use in testing both software RNG's and
+	  hardware RNG's.
+
+	  http://www.phy.duke.edu/~rgb/General/dieharder.php
