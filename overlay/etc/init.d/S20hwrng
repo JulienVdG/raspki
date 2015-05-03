@@ -1,0 +1,40 @@
+#!/bin/sh
+#
+# Start logging
+#
+
+start() {
+	modprobe bcm2708-rng
+	echo -n "Starting rngd: "
+	rngd
+	echo "OK"
+}
+stop() {
+	echo -n "Stopping rngd: "
+	killall rngd
+	head -c256 /dev/random >/dev/null
+	echo "OK"
+	modprobe -r bcm2708-rng
+}
+restart() {
+	stop
+	start
+}
+
+case "$1" in
+  start)
+	start
+	;;
+  stop)
+	stop
+	;;
+  restart|reload)
+	restart
+	;;
+  *)
+	echo "Usage: $0 {start|stop|restart}"
+	exit 1
+esac
+
+exit $?
+
