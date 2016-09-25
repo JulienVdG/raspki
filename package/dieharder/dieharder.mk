@@ -5,7 +5,7 @@
 ################################################################################
 
 DIEHARDER_VERSION = 3.31.1
-DIEHARDER_SITE = http://www.phy.duke.edu/~rgb/General/dieharder/
+DIEHARDER_SITE = http://www.phy.duke.edu/~rgb/General/dieharder
 DIEHARDER_SOURCE = dieharder-$(DIEHARDER_VERSION).tgz
 DIEHARDER_LICENSE = GPLv2
 DIEHARDER_LICENSE_FILES = GPL
