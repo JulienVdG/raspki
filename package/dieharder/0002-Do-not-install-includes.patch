@@ -1,0 +1,28 @@
+From 9ee8200a6dec6aca7f4f37c46ca95ac1cb38306c Mon Sep 17 00:00:00 2001
+From: Julien Viard de Galbert <julien@vdg.name>
+Date: Sat, 14 Jan 2017 14:08:07 +0100
+Subject: [PATCH 2/4] Do not install includes
+
+We don't want include files on the target
+
+Signed-off-by: Julien Viard de Galbert <julien@vdg.name>
+---
+ Makefile.am | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Makefile.am b/Makefile.am
+index 489c493..0264c5e 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -74,7 +74,7 @@ SPEC = $(PROJECT).spec
+ # presume the simplest of dependencies and remake if includes change
+ # for example.
+ #========================================================================
+-all: $(LIBTIME) $(PROGTIME) $(INCTIME)
++all: $(LIBTIME) $(PROGTIME)
+ 
+ # This is not, actually, a particularly useful toplevel target.  To
+ # work correctly it also would require a full parsing of all
+-- 
+2.1.4
+
