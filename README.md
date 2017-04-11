@@ -7,7 +7,7 @@ or use `git submodule update --init`
 
 # build step
 
-1. build toolchain: `make -f Makefile.toolchain oldconfig toolchain`
+1. build toolchain: `make -f Makefile.toolchain`
 
 2. build raspki: `make`
 
