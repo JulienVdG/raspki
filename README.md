@@ -13,10 +13,8 @@ or use `git submodule update --init`
 
 # install
 
-Mount SdCard as `/media/usb0` then copy the files:
+Identify your sdcard device (assuming sdb bellow)
 ```
-cp -R output/images/rpi-firmware/* /media/usb0
-cp output/images/zImage /media/usb0
-cp output/images/rootfs.cpio.gz /media/usb0
+sudo dd if=output/images/sdcard.img of=/dev/sdb bs=1M
 ```
 

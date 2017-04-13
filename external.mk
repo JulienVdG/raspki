@@ -4,6 +4,7 @@ include $(sort $(wildcard $(BR2_EXTERNAL_BUILDROOT_SUBMODULE_PATH)/package/*/*.m
 BR2_ROOTFS_POST_BUILD_SCRIPT += $(BR2_EXTERNAL_BUILDROOT_SUBMODULE_PATH)/scripts/ssh_devel.sh
 
 BR2_ROOTFS_POST_IMAGE_SCRIPT += $(BR2_EXTERNAL_BUILDROOT_SUBMODULE_PATH)/scripts/update_rpi_config.sh
+BR2_ROOTFS_POST_IMAGE_SCRIPT += $(BR2_EXTERNAL_BUILDROOT_SUBMODULE_PATH)/scripts/genimage.sh
 
 DEPLOY_FILES = $(BINARIES_DIR)/rpi-firmware/* $(BINARIES_DIR)/zImage $(BINARIES_DIR)/rootfs.cpio.gz
 DEPLOY_SSH_OPTS ?= -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null"
