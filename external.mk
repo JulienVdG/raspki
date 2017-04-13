@@ -1,9 +1,9 @@
 # Makefiles used by all subprojects
 include $(sort $(wildcard $(BR2_EXTERNAL)/package/*/*.mk))
 
-BR2_ROOTFS_POST_BUILD_SCRIPT += $(BR2_EXTERNAL)/ssh_devel.sh
+BR2_ROOTFS_POST_BUILD_SCRIPT += $(BR2_EXTERNAL)/scripts/ssh_devel.sh
 
-BR2_ROOTFS_POST_IMAGE_SCRIPT += $(BR2_EXTERNAL)/update_rpi_config.sh
+BR2_ROOTFS_POST_IMAGE_SCRIPT += $(BR2_EXTERNAL)/scripts/update_rpi_config.sh
 
 DEPLOY_FILES = $(BINARIES_DIR)/rpi-firmware/* $(BINARIES_DIR)/zImage $(BINARIES_DIR)/rootfs.cpio.gz
 DEPLOY_SSH_OPTS ?= -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null"
