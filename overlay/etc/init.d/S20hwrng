@@ -1,19 +1,12 @@
 #!/bin/sh
 #
-# Start logging
+# Start rpi hw rng
 #
 
 start() {
 	modprobe bcm2708-rng
-	echo -n "Starting rngd: "
-	rngd
-	echo "OK"
 }
 stop() {
-	echo -n "Stopping rngd: "
-	killall rngd
-	head -c256 /dev/random >/dev/null
-	echo "OK"
 	modprobe -r bcm2708-rng
 }
 restart() {
