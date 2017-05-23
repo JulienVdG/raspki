@@ -1,0 +1,73 @@
+#!/bin/sh
+#
+# Mount / create shared partition for certificates
+#
+set -e
+
+DEV="/dev/mmcblk0"
+PART="mmcblk0p3"
+DEVPART="/dev/$PART"
+MNT="/mnt/private"
+LABEL="PRIVATE"
+DEVMAP="/dev/mapper/$LABEL"
+
+resize() {
+	sfdisk -d $DEV > /tmp/part.out
+	sed -i '/'$PART'/s/size=.*, //' /tmp/part.out
+	sfdisk $DEV < /tmp/part.out
+	rm /tmp/part.out
+	sfdisk -l $DEV
+
+}
+autoresize() {
+	eval $(sfdisk -l $DEV|awk -- '/Disk \/dev/ {print "last_sect="$7-1;} /'$PART'/ {print "used_sect="$3;}')
+	[ $last_sect -eq $used_sect ] || resize
+}
+
+create() {
+	echo "Formatting $LABEL part..."
+	cryptsetup luksFormat $DEVPART
+	cryptsetup luksOpen $DEVPART $LABEL
+	mkfs.ext4 -q -L $LABEL $DEVMAP
+	mount $DEVMAP $MNT
+}
+start() {
+	mkdir -p $MNT
+	autoresize
+	if ! cryptsetup luksDump $DEVPART; then
+		create
+	else
+		cryptsetup luksOpen $DEVPART $LABEL
+		mount $DEVMAP $MNT
+	fi
+}
+stop() {
+	umount $DEVMAP
+	cryptsetup luksClose $LABEL
+}
+restart() {
+	stop
+	start
+}
+
+case "$1" in
+  start)
+	start
+	;;
+  stop)
+	stop
+	;;
+  restart|reload)
+	restart
+	;;
+  force-recreate)
+	stop
+	create
+	;;
+  *)
+	echo "Usage: $0 {start|stop|restart|force-recreate}"
+	exit 1
+esac
+
+exit $?
+

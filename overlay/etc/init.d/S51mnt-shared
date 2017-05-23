@@ -1,0 +1,50 @@
+#!/bin/sh
+#
+# Mount / create shared partition for certificates
+#
+set -e
+
+DEV="/dev/mmcblk0p2"
+MNT="/mnt/shared"
+LABEL="SHARED"
+
+create() {
+	mkfs.ext4 -q -L $LABEL $DEV
+}
+start() {
+	mkdir -p $MNT
+	if ! mount $DEV $MNT; then
+		create
+		mount $DEV $MNT
+	fi
+}
+stop() {
+	umount $DEV
+}
+restart() {
+	stop
+	start
+}
+
+case "$1" in
+  start)
+	start
+	;;
+  stop)
+	stop
+	;;
+  restart|reload)
+	restart
+	;;
+  force-recreate)
+	stop
+	create
+	start
+	;;
+  *)
+	echo "Usage: $0 {start|stop|restart|force-recreate}"
+	exit 1
+esac
+
+exit $?
+
