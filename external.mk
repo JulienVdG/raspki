@@ -1,8 +1,6 @@
 # Makefiles used by all subprojects
 include $(sort $(wildcard $(BR2_EXTERNAL_BUILDROOT_SUBMODULE_PATH)/package/*/*.mk))
 
-BR2_ROOTFS_POST_BUILD_SCRIPT += $(BR2_EXTERNAL_BUILDROOT_SUBMODULE_PATH)/scripts/ssh_devel.sh
-
 BR2_ROOTFS_POST_IMAGE_SCRIPT += $(BR2_EXTERNAL_BUILDROOT_SUBMODULE_PATH)/scripts/update_rpi_config.sh
 BR2_ROOTFS_POST_IMAGE_SCRIPT += $(BR2_EXTERNAL_BUILDROOT_SUBMODULE_PATH)/scripts/genimage.sh
 
