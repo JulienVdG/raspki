@@ -1,0 +1,20 @@
+##raspki shared --req-cn=apache_wildcard --req-ou=phenix --batch gen-req apache_wildcard nopass
+##raspki private import-req apache_wildcard
+##raspki private sign-req apache_wildcard apache_wildcard
+
+nsComment                       = "Viard de Galbert https server"
+subjectKeyIdentifier            = hash
+authorityKeyIdentifier          = keyid,issuer:always
+issuerAltName                   = issuer:copy
+basicConstraints                = critical,CA:FALSE
+keyUsage                        = digitalSignature, nonRepudiation, keyEncipherment
+nsCertType                      = server
+extendedKeyUsage                = serverAuth
+subjectAltName                  = @ALIASES
+
+[ ALIASES ]
+DNS.1 = vdg.name
+DNS.2 = vdg.blogsite.org
+DNS.3 = silicone.homelinux.org
+DNS.4 = svdg.blogsite.org
+DNS.5 = *.vdg.name

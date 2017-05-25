@@ -1,0 +1,17 @@
+##raspki shared --req-cn=silicone.vdg.name --req-ou=phenix --batch gen-req apache_silicone nopass
+##raspki private import-req apache_silicone
+##raspki private sign-req apache_silicone apache_silicone
+
+nsComment                       = "Viard de Galbert https server"
+subjectKeyIdentifier            = hash
+authorityKeyIdentifier          = keyid,issuer:always
+issuerAltName                   = issuer:copy
+basicConstraints                = critical,CA:FALSE
+keyUsage                        = digitalSignature, nonRepudiation, keyEncipherment
+nsCertType                      = server
+extendedKeyUsage                = serverAuth
+subjectAltName                  = @ALIASES
+
+[ ALIASES ]
+DNS.1 = silicone.vdg.name
+DNS.2 = silicone.homelinux.org

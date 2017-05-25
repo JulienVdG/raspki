@@ -1,0 +1,17 @@
+##raspki shared --req-cn=s.vdg.name --req-ou=phenix --batch gen-req apache_s nopass
+##raspki private import-req apache_s
+##raspki private sign-req apache_s apache_s
+
+nsComment                       = "Viard de Galbert https server"
+subjectKeyIdentifier            = hash
+authorityKeyIdentifier          = keyid,issuer:always
+issuerAltName                   = issuer:copy
+basicConstraints                = critical,CA:FALSE
+keyUsage                        = digitalSignature, nonRepudiation, keyEncipherment
+nsCertType                      = server
+extendedKeyUsage                = serverAuth
+subjectAltName                  = @ALIASES
+
+[ ALIASES ]
+DNS.1 = s.vdg.name
+DNS.2 = svdg.blogsite.org

@@ -1,0 +1,3 @@
+[ crlDistributionPoints_values ]
+URI.1=http://ca.vdg.name/crl.der
+URI.2=http://ca.vdg.name/crl.pem

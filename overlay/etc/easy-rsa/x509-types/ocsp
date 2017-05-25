@@ -2,6 +2,7 @@
 ##raspki private import-req ocsp
 ##raspki private sign-req ocsp ocsp
 
+nsComment                       = "Viard de Galbert OCSP Responder"
 subjectKeyIdentifier            = hash
 authorityKeyIdentifier          = keyid,issuer:always
 basicConstraints                = critical,CA:FALSE

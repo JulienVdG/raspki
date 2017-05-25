@@ -1,0 +1,2 @@
+authorityInfoAccess             = OCSP;URI:http://ca.vdg.name/ocsp
+crlDistributionPoints           = @crlDistributionPoints_values
