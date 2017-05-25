@@ -4,9 +4,18 @@
 #
 set -e
 
-SRC="/etc/easy-rsa"
-DST="/mnt/private/easy-rsa"
+MNT="/mnt/private"
 
+SRC="/etc/easy-rsa"
+DST="$MNT/easy-rsa"
+
+check_mount() {
+	if ! grep "$MNT" /proc/self/mounts > /dev/null; then
+		echo "ERROR: '$MNT' is not mounted, not updating easy-rsa configuration !!"
+		echo "Please run '$0 start' again when mounted."
+		exit 1
+	fi
+}
 update() {
 	local f s d p
 	if [ ! -d $DST ]; then
@@ -35,11 +44,13 @@ update() {
 }
 
 recreate() {
+	check_mount
 	rm -rf $DST
 	cp -a $SRC $DST
 }
 
 start() {
+	check_mount
 	update
 }
 
