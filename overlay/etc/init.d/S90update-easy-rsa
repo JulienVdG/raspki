@@ -1,0 +1,74 @@
+#!/bin/sh
+#
+# Copy/Update easy-rsa configuration to private area
+#
+set -e
+
+SRC="/etc/easy-rsa"
+DST="/mnt/private/easy-rsa"
+
+update() {
+	local f s d p
+	if [ ! -d $DST ]; then
+		cp -a $SRC $DST
+	else
+		cd $SRC
+		for f in $(find .); do
+			s=$(realpath $f)
+			d=$DST/$f
+			if [ -d $s ]; then
+				[ -d $d ] || mkdir $d
+			elif [ ! -e $d ]; then
+				cp -a $s $d
+			elif ! diff -au $s $(realpath $d); then
+				echo
+				echo -n $(realpath $d) 'changed would you like to replace it? [N/y] '
+				read p
+				if [ "$p" = "y" ]; then
+					cp -a $s $d
+					echo "updated."
+				fi
+			fi
+		done
+		cd - > /dev/null
+	fi
+}
+
+recreate() {
+	rm -rf $DST
+	cp -a $SRC $DST
+}
+
+start() {
+	update
+}
+
+stop() {
+:
+}
+
+restart() {
+	stop
+	start
+}
+
+case "$1" in
+  start)
+	start
+	;;
+  stop)
+	stop
+	;;
+  restart|reload)
+	restart
+	;;
+  force-recreate)
+	recreate
+	;;
+  *)
+	echo "Usage: $0 {start|stop|restart|force-recreate}"
+	exit 1
+esac
+
+exit $?
+
