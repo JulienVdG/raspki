@@ -7,15 +7,16 @@ set -e
 DEV="/dev/mmcblk0p2"
 MNT="/mnt/shared"
 LABEL="SHARED"
+TYPE="ext4"
 
 create() {
 	mkfs.ext4 -q -L $LABEL $DEV
 }
 start() {
 	mkdir -p $MNT
-	if ! mount $DEV $MNT; then
+	if ! mount -t $TYPE $DEV $MNT; then
 		create
-		mount $DEV $MNT
+		mount -t $TYPE $DEV $MNT
 	fi
 }
 stop() {

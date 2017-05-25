@@ -10,6 +10,7 @@ DEVPART="/dev/$PART"
 MNT="/mnt/private"
 LABEL="PRIVATE"
 DEVMAP="/dev/mapper/$LABEL"
+TYPE="ext4"
 
 resize() {
 	sfdisk -d $DEV > /tmp/part.out
@@ -29,7 +30,7 @@ create() {
 	cryptsetup luksFormat $DEVPART
 	cryptsetup luksOpen $DEVPART $LABEL
 	mkfs.ext4 -q -L $LABEL $DEVMAP
-	mount $DEVMAP $MNT
+	mount -t $TYPE $DEVMAP $MNT
 }
 start() {
 	mkdir -p $MNT
@@ -38,7 +39,7 @@ start() {
 		create
 	else
 		cryptsetup luksOpen $DEVPART $LABEL
-		mount $DEVMAP $MNT
+		mount -t $TYPE $DEVMAP $MNT
 	fi
 }
 stop() {
