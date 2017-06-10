@@ -1,11 +1,11 @@
 #!/bin/sh
 #
-# Pause for traces to stabilize before passphrase entry
+# Pause for traces to stabilize before rtc and passphrase entry
 #
 set -e
 
 start() {
-	sleep 1
+	sleep 2
 }
 
 stop() {

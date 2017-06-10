@@ -4,54 +4,22 @@
 #
 set -e
 
-MNT="/mnt/private"
-
-SRC="/etc/easy-rsa"
-DST="$MNT/easy-rsa"
+MNT_SHARED="/mnt/shared"
+MNT_PRIVATE="/mnt/private"
 
 check_mount() {
+	MNT=$1
 	if ! grep "$MNT" /proc/self/mounts > /dev/null; then
 		echo "ERROR: '$MNT' is not mounted, not updating easy-rsa configuration !!"
 		echo "Please run '$0 start' again when mounted."
 		exit 1
 	fi
 }
-update() {
-	local f s d p
-	if [ ! -d $DST ]; then
-		cp -a $SRC $DST
-	else
-		cd $SRC
-		for f in $(find .); do
-			s=$(realpath $f)
-			d=$DST/$f
-			if [ -d $s ]; then
-				[ -d $d ] || mkdir $d
-			elif [ ! -e $d ]; then
-				cp -a $s $d
-			elif ! diff -au $s $(realpath $d); then
-				echo
-				echo -n $(realpath $d) 'changed would you like to replace it? [N/y] '
-				read p
-				if [ "$p" = "y" ]; then
-					cp -a $s $d
-					echo "updated."
-				fi
-			fi
-		done
-		cd - > /dev/null
-	fi
-}
-
-recreate() {
-	check_mount
-	rm -rf $DST
-	cp -a $SRC $DST
-}
 
 start() {
-	check_mount
-	update
+	check_mount "$MNT_SHARED"
+	check_mount "$MNT_PRIVATE"
+	/usr/bin/raspki update
 }
 
 stop() {
@@ -73,11 +41,8 @@ case "$1" in
   restart|reload)
 	restart
 	;;
-  force-recreate)
-	recreate
-	;;
   *)
-	echo "Usage: $0 {start|stop|restart|force-recreate}"
+	echo "Usage: $0 {start|stop|restart}"
 	exit 1
 esac
 

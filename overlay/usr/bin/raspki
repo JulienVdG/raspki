@@ -1,0 +1,261 @@
+#!/bin/sh
+
+# RasPKI command line utility
+#
+# Copyright (C) 2017 Julien Viard de Galbert
+# This file is GPL2+
+
+DIST_CONF="/etc/easy-rsa"
+EASYRSA_BIN="/usr/bin/easyrsa"
+SHARED_CONF="/mnt/shared/easy-rsa"
+PRIVATE_CONF="/mnt/private/easy-rsa"
+
+# Help/usage output to stdout
+usage() {
+	# command help:
+	printf "
+RasPKI usage: raspki <cmd>
+
+Where cmd can be:
+  update        : update configuration from distribution to SHARED
+                  and from SHARED to PRIVATE.
+  init          : initialize the SHARED and PRIVATE pki dirs and create CA.
+  shared        : launch easyrsa in SHARED environment
+  private       : launch easyrsa in PRIVATE environment
+  publish       : invoque easyrsa publish-ca update on PRIVATE environment
+  auto          : parameter is a config name from x509-types
+                  the header of this file is parsed line starting by ##raspki
+                  followed by either shared or private are processed through
+                  easyrsa in the corresponding environment.
+  list-types    : list available certificate types.
+                  prefixed with (auto) if auto cmd is supported.
+  status        : show a summary of existing files (parameters or all)
+                  The columns are \"t req key crt export  ser st  name\":
+                  t     : t=type exist, a=exist with auto command
+		  req   : request     S=in SHARED env - P=in PRIVATE env
+		  key   : key         S=in SHARED env - P=in PRIVATE env
+		  crt   : certificate S=in SHARED env - P=in PRIVATE env
+		  export: p12=pkcs12, p7b=pkcs7
+		  ser   : serial number
+		  st    : revocation status
+		  name  : base file name
+  clean         : remove all file associated with a given revoked certificate
+"
+} # => usage()
+
+# update conf files SRC DST prompt for updated files
+# ignore the pki directory
+cp_update_conf() {
+	local src dst
+	src=$(realpath $1)
+	dst=$2
+	local s d p
+	for s in $(find $src -not -path "$src/pki*"); do
+		d=$dst/${s#$src}
+		if [ -d $s ]; then
+			[ -d $d ] || mkdir $d
+		elif [ ! -e $d ]; then
+			cp -a $s $d
+		elif ! diff -au $(realpath $d) $s; then
+			echo
+			echo -n $(realpath $d) 'changed would you like to replace it? [N/y] '
+			read p
+			if [ "$p" = "y" ]; then
+				cp -a $s $d
+				echo "updated."
+			fi
+		fi
+	done
+} # => cp_update()
+
+# update SHARED conf from distribution, also copy easyrsa binary
+# update PRIVATE conf from shared one
+update() {
+	local shared_copied
+	shared_copied=
+	if [ ! -d "$SHARED_CONF" ]; then
+		echo "Initialising SHARED configuration..."
+		cp -a "$DIST_CONF" "$SHARED_CONF"
+		cp -a "$EASYRSA_BIN" "$SHARED_CONF"
+		shared_copied=1
+	else
+		echo "Updating SHARED configuration from default..."
+		cp_update_conf "$DIST_CONF" "$SHARED_CONF"
+	fi
+	if [ $shared_copied ] && [ ! -d "$PRIVATE_CONF" ]; then
+		echo "Initialising PRIVATE configuration..."
+		cp -a "$DIST_CONF" "$PRIVATE_CONF"
+	else
+		mkdir -p "$PRIVATE_CONF"
+		echo "Updating PRIVATE configuration from SHARED one..."
+		cp_update_conf "$SHARED_CONF" "$PRIVATE_CONF"
+	fi
+
+} # => update()
+
+# call easyrsa in SHARED environment
+shared() {
+	EASYRSA="$SHARED_CONF" $EASYRSA_BIN "$@"
+} # => shared
+
+# call easyrsa in PRIVATE environment
+private() {
+	EASYRSA="$PRIVATE_CONF" EASYRSA_PUBLISH="$SHARED_CONF/pki" $EASYRSA_BIN "$@"
+} # => shared
+
+# init pki & ca
+init() {
+	echo "Initialise the SHARED Easy-RSA pki dir:"
+	shared init-pki
+	echo "Initialise the PRIVATE Easy-RSA pki dir and CA:"
+	private init-pki && private build-ca
+} # => init
+
+# list available cert types
+list_types() {
+	for n in $(ls "$SHARED_CONF/x509-types/"); do
+		case $n in
+		ca|COMMON|COMMON-SECTIONS)
+		;;
+		*)
+			if grep -e '^##raspki ' "$SHARED_CONF/x509-types/$n" > /dev/null; then
+				echo -n ' (auto) '
+			else
+				echo -n '        '
+			fi
+			echo $n
+		;;
+		esac
+	done
+} # => list_types
+
+# param: file, exist string, nonexist string
+fe_yn() {
+	[ -f "$1" ] && echo -n "$2" || echo -n "$3"
+} # => fe_yn
+
+status_1() {
+	local n="$1"
+	if [ -f "$SHARED_CONF/x509-types/$n" ]; then
+		grep -e '^##raspki ' "$SHARED_CONF/x509-types/$n" > /dev/null && echo -n 'a ' || echo -n 't '
+	else
+		echo -n '  '
+	fi
+	fe_yn  "$SHARED_CONF/pki/reqs/$n.req"    'S-' ' -'
+	fe_yn "$PRIVATE_CONF/pki/reqs/$n.req"    'P ' '  '
+	fe_yn  "$SHARED_CONF/pki/private/$n.key" 'S-' ' -'
+	fe_yn "$PRIVATE_CONF/pki/private/$n.key" 'P ' '  '
+	fe_yn  "$SHARED_CONF/pki/issued/$n.crt"  'S-' ' -'
+	fe_yn "$PRIVATE_CONF/pki/issued/$n.crt"  'P ' '  '
+	fe_yn  "$SHARED_CONF/pki/private/$n.p12" 'p12 ' '    '
+	fe_yn  "$SHARED_CONF/pki/issued/$n.p7b"  'p7b ' '    '
+	local s=$(private status $n 2>&1 1>/dev/null|grep '=.*(.)$')
+	[ -z "$s" ] && echo -n "        " || printf "%3s %3s " ${s%%=*} \(${s##*(}
+	echo $n
+} # => status_1
+
+# display status summary
+status() {
+	all="$@"
+	if [ -z "$all" ]; then
+		all=$( (
+		ls "$SHARED_CONF/x509-types/" | grep -v '^COMMON\(-SECTIONS\)\?$'
+		(ls "$SHARED_CONF/pki/reqs/"; ls "$PRIVATE_CONF/pki/reqs/") | sed 's/\.req$//'
+		(ls "$SHARED_CONF/pki/private/"; ls "$PRIVATE_CONF/pki/private/") | sed 's/\.\(key\|p12\)$//'
+		(ls "$SHARED_CONF/pki/issued/"; ls "$PRIVATE_CONF/pki/issued/") | sed 's/\.\(crt\|p7b\)$//'
+		) |sort -u )
+	fi
+	echo "t req key crt export  ser st  name"
+	for a in $all; do
+		status_1 $a
+	done
+} # => status_1
+
+# clean : remove revoked certificate and associated files
+clean() {
+	local n="$1"
+	local s=$(private status $n 2>&1 1>/dev/null|grep '=.*(.)$')
+	if [ "${s##*(}" != "R)" ]; then
+		echo "Certificate $n is not revoked, status: $s."
+		exit 1
+	fi
+	rm -f "$SHARED_CONF/pki/reqs/$n.req" \
+	     "$PRIVATE_CONF/pki/reqs/$n.req" \
+	      "$SHARED_CONF/pki/private/$n.key" \
+	     "$PRIVATE_CONF/pki/private/$n.key" \
+	      "$SHARED_CONF/pki/issued/$n.crt" \
+	     "$PRIVATE_CONF/pki/issued/$n.crt" \
+	      "$SHARED_CONF/pki/private/$n.p12" \
+	      "$SHARED_CONF/pki/issued/$n.p7b"
+
+	echo "All files associated with $n have been removed."
+} # => clean
+
+# process generation automatically
+auto() {
+	local in="$SHARED_CONF/x509-types/$1"
+	if [ ! -f $in ]; then
+		echo "Error Configuration '$1' not found."
+		exit 1
+	fi
+	set -e
+	local parse=1 header='##raspki ' line cmdline cmd arg
+	while [ $parse ]; do
+		IFS="" read line <&3 || parse=
+		cmdline="${line##$header}"
+		if [ "$header$cmdline" = "$line" ]; then
+			cmd="${cmdline%% *}"
+			arg="${cmdline#$cmd }"
+			case "$cmd" in
+			shared)
+				shared $arg
+				;;
+			private)
+				private $arg
+				;;
+			esac
+		else
+			parse=
+		fi
+	done 3< $in
+	set +e
+} # => auto
+
+cmd=$1
+shift
+
+case "$cmd" in
+  update)
+	update
+	;;
+  shared)
+	shared "$@"
+	;;
+  private)
+	private "$@"
+	;;
+  init)
+	init
+	;;
+  list-types)
+	list_types
+	;;
+  status)
+	status "$@"
+	;;
+  auto)
+	auto "$@"
+	;;
+  clean)
+	clean "$@"
+	;;
+  publish)
+	private publish-ca update
+	;;
+  *)
+	usage
+	exit 1
+esac
+
+exit $?
+
