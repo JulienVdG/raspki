@@ -43,8 +43,10 @@ start() {
 	fi
 }
 stop() {
+	set +e
 	umount $DEVMAP
 	cryptsetup luksClose $LABEL
+	set -e
 }
 restart() {
 	stop
