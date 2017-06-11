@@ -11,7 +11,7 @@ EASY_RSA_SITE = https://github.com/OpenVPN/easy-rsa/releases/download/$(EASY_RSA
 EASY_RSA_SUBDIR =
 else
 EASY_RSA_VERSION = master
-EASY_RSA_SITE = $(call github,OpenVPN,easy-rsa,$(EASY_RSA_VERSION))
+EASY_RSA_SITE = $(call github,JulienVdG,easy-rsa,$(EASY_RSA_VERSION))
 EASY_RSA_SUBDIR = /easyrsa3
 endif
 
