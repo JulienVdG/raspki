@@ -10,7 +10,7 @@ EASY_RSA_SOURCE = EasyRSA-$(EASY_RSA_VERSION).tgz
 EASY_RSA_SITE = https://github.com/OpenVPN/easy-rsa/releases/download/$(EASY_RSA_VERSION)
 EASY_RSA_SUBDIR =
 else
-EASY_RSA_VERSION = master
+EASY_RSA_VERSION = e9931afbf35d389abdad7de5a6e99dec07539701
 EASY_RSA_SITE = $(call github,JulienVdG,easy-rsa,$(EASY_RSA_VERSION))
 EASY_RSA_SUBDIR = /easyrsa3
 endif

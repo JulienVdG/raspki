@@ -1,5 +1,8 @@
 # Locally computed: (after verifying gpg sig)
 sha512 d20f646e33ec803444dfcd446553f1d6001227fedec93280c212b34cccee11b184599f1b2ae6a3ce9cf6c9ac52f2b840ebb645536df6ddf55382fa25c22df81f EasyRSA-3.0.1.tgz
 
+# Locally computed:
+sha512 02f73b01eec7ffcf1f84a662d5f4469197afa3c756c85f7ce7f14f0a4a691e7c9908a74662b243862ac56d68e15233d669e728eb711e2dc35624f0727e5f359e easy-rsa-e9931afbf35d389abdad7de5a6e99dec07539701.tar.gz
+
 # when cloning from git master, ignore hash
 none xxx easy-rsa-master.tar.gz
