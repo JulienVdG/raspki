@@ -1,0 +1,9 @@
+##raspki shared --req-cn=OCSP --batch gen-req ocsp nopass
+##raspki private import-req ocsp
+##raspki private sign-req ocsp ocsp
+
+subjectKeyIdentifier            = hash
+authorityKeyIdentifier          = keyid,issuer:always
+basicConstraints                = critical,CA:FALSE
+extendedKeyUsage                = OCSPSigning
+
