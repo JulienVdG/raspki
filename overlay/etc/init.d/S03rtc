@@ -6,7 +6,7 @@
 
 start() {
 	echo 'Type the following command on your linux prompt:
-date +"%Y-%_0m-%_0d %_0k:%_0M"
+date --utc +"%Y-%_0m-%_0d %_0k:%_0M"
 '
 	read -p 'Enter the result here ' date
 	date "$date"
